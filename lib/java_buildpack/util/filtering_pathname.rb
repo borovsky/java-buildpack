@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require 'fileutils'
 require 'java_buildpack/util'
 require 'pathname'
 require 'set'
@@ -103,16 +104,17 @@ module JavaBuildpack::Util
       end
     end
 
+    # Check that this instance is mutable and raise an error if it is not.
+    def check_mutable
+      fail 'FilteringPathname is immutable' unless @mutable
+    end
+
     private
 
     MUTATORS = [:chmod, :chown, :delete, :lchmod, :lchown, :make_link, :make_symlink, :mkdir, :mkpath, :rename, :rmdir, :rmtree, :taint, :unlink, :untaint].to_set.freeze
 
     def self.check_file_does_not_exist(file)
       fail "#{file} should not exist" if file.exist?
-    end
-
-    def check_mutable
-      fail 'FilteringPathname is immutable' unless @mutable
     end
 
     def convert_if_necessary(r)
@@ -172,4 +174,20 @@ module JavaBuildpack::Util
     end
 
   end
+end
+
+# Open FileUtils to redefine certain methods.
+module FileUtils
+
+  alias_method :mkdir_p_original, :mkdir_p
+  module_function :mkdir_p_original
+
+  # Wrap original method checking for immutability.
+  def mkdir_p(list, options = {})
+    list.check_mutable if list.instance_of? JavaBuildpack::Util::FilteringPathname
+    mkdir_p_original(list, options)
+  end
+
+  module_function :mkdir_p
+
 end

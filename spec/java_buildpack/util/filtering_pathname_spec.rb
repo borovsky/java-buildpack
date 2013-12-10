@@ -16,6 +16,7 @@
 
 require 'application_helper'
 require 'diagnostics_helper'
+require 'fileutils'
 require 'java_buildpack/util'
 require 'java_buildpack/util/filtering_pathname'
 require 'set'
@@ -355,6 +356,16 @@ describe JavaBuildpack::Util::FilteringPathname do
 
   it 'should raise error if pwd is used' do
     expect { JavaBuildpack::Util::FilteringPathname.pwd }.to raise_error /undefined method `pwd'/
+  end
+
+  # Check common filesystem mutation idioms
+
+  it 'should not raise an error if FileUtils.mkdir_p is used on a mutable filtering pathname' do
+    FileUtils.mkdir_p mutable_target
+  end
+
+  it 'should raise error if FileUtils.mkdir_p is used on an immutable filtering pathname' do
+    expect { FileUtils.mkdir_p immutable_target }.to raise_error /FilteringPathname is immutable/
   end
 
   def create_file(filename)
