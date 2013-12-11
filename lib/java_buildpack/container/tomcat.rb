@@ -15,7 +15,7 @@
 # limitations under the License.
 
 require 'fileutils'
-require 'java_buildpack/base_component'
+require 'java_buildpack/component/base_component'
 require 'java_buildpack/container'
 require 'java_buildpack/repository/configured_item'
 require 'java_buildpack/util/format_duration'
@@ -24,7 +24,7 @@ require 'java_buildpack/util/java_main_utils'
 module JavaBuildpack::Container
 
   # Encapsulates the detect, compile, and release functionality for Tomcat applications.
-  class Tomcat < JavaBuildpack::BaseComponent
+  class Tomcat < JavaBuildpack::Component::BaseComponent
 
     def initialize(context)
       super('Tomcat', context)
@@ -111,7 +111,6 @@ module JavaBuildpack::Container
       expand_start_time = Time.now
       print "       Expanding Tomcat to #{@application.relative_path_to(home)} "
 
-      FileUtils.rm_rf home
       FileUtils.mkdir_p home
       shell "tar xzf #{file.path} -C #{home} --strip 1 --exclude webapps 2>&1"
 

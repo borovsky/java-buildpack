@@ -18,10 +18,9 @@ require 'spec_helper'
 require 'application_helper'
 require 'console_helper'
 require 'fileutils'
-require 'java_buildpack/diagnostics'
-require 'java_buildpack/diagnostics/logger_factory'
+require 'java_buildpack/logging/logger_factory'
 
-shared_context 'diagnostics_helper' do
+shared_context 'logging_helper' do
   include_context 'console_helper'
   include_context 'application_helper'
 
@@ -29,11 +28,7 @@ shared_context 'diagnostics_helper' do
   previous_debug_level = $DEBUG
   previous_verbose_level = $VERBOSE
 
-  let(:diagnostics_dir) { Pathname.new(JavaBuildpack::Diagnostics.get_diagnostic_directory application) }
-
-  let(:log_contents) { Pathname.new(JavaBuildpack::Diagnostics.get_buildpack_log application).read }
-
-  let(:logger) { JavaBuildpack::Diagnostics::LoggerFactory.create_logger application }
+  let(:log_contents) { Pathname.new(application.root + '.java-buildpack.log').read }
 
   before do |example|
     log_level = example.metadata[:log_level]
@@ -42,11 +37,11 @@ shared_context 'diagnostics_helper' do
     $DEBUG = example.metadata[:debug]
     $VERBOSE = example.metadata[:verbose]
 
-    logger
+    JavaBuildpack::Logging::LoggerFactory.setup application
   end
 
   after do
-    JavaBuildpack::Diagnostics::LoggerFactory.close
+    JavaBuildpack::Logging::LoggerFactory.reset
 
     ENV['JBP_LOG_LEVEL'] = previous_log_level
     $VERBOSE = previous_verbose_level

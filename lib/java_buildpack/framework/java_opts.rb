@@ -14,14 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'java_buildpack/base_component'
+require 'java_buildpack/component/base_component'
 require 'java_buildpack/framework'
 require 'shellwords'
 
 module JavaBuildpack::Framework
 
   # Encapsulates the functionality for contributing custom Java options to an application.
-  class JavaOpts < JavaBuildpack::BaseComponent
+  class JavaOpts < JavaBuildpack::Component::BaseComponent
 
     def initialize(context)
       super('JAVA_OPTS', context)

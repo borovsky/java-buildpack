@@ -15,59 +15,59 @@
 # limitations under the License.
 
 require 'fileutils'
+require 'java_buildpack/component/versioned_dependency_component'
 require 'java_buildpack/framework'
-require 'java_buildpack/util/service_utils'
-require 'java_buildpack/versioned_dependency_component'
 
 module JavaBuildpack::Framework
 
   # Encapsulates the functionality for enabling zero-touch New Relic support.
-  class NewRelic < JavaBuildpack::VersionedDependencyComponent
+  class NewRelicAgent < JavaBuildpack::Component::VersionedDependencyComponent
 
     def initialize(context)
-      super('New Relic Agent', context)
+      super(context)
     end
 
     def compile
-      FileUtils.rm_rf home
-      FileUtils.mkdir_p home
+      FileUtils.mkdir_p @droplet.sandbox
       FileUtils.mkdir_p logs_dir
 
-      download_jar jar_name, home
-      copy_resources
+      download_jar jar_name
+      @droplet.copy_resources
     end
 
     def release
-      @application.java_opts
-      .add_javaagent(home + jar_name)
-      .add_system_property('newrelic.home', home)
+      @droplet.java_opts
+      .add_javaagent(@droplet.sandbox + jar_name)
+      .add_system_property('newrelic.home', @droplet.sandbox)
       .add_system_property('newrelic.config.license_key', license_key)
-      .add_system_property('newrelic.config.app_name', "'#{@vcap_application[NAME_KEY]}'")
+      .add_system_property('newrelic.config.app_name', "'#{application_name}'")
       .add_system_property('newrelic.config.log_file_path', logs_dir)
     end
 
     protected
 
     def supports?
-      JavaBuildpack::Util::ServiceUtils.find_service(@vcap_services, SERVICE_NAME)
+      @application.services.one_service? FILTER
     end
 
     private
 
-    NAME_KEY = 'application_name'.freeze
+    FILTER = /newrelic/.freeze
 
-    SERVICE_NAME = /newrelic/.freeze
+    def application_name
+      @application.details['application_name']
+    end
 
     def jar_name
-      "#{@parsable_component_name}-#{@version}.jar"
+      "#{@droplet.component_id}-#{@version}.jar"
     end
 
     def license_key
-      JavaBuildpack::Util::ServiceUtils.find_service(@vcap_services, SERVICE_NAME)['credentials']['licenseKey']
+      @application.services.find_service(FILTER)['credentials']['licenseKey']
     end
 
     def logs_dir
-      home + 'logs'
+      @droplet.sandbox + 'logs'
     end
 
   end

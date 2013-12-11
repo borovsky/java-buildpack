@@ -14,8 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'java_buildpack'
+require 'java_buildpack/component'
+require 'java_buildpack/component/immutable_java_home'
 
-# A module encapsulating the application abstraction for the Java buildpack
-module JavaBuildpack::Application
+module JavaBuildpack::Component
+
+  # Qualifies the path such that is is formatted as +$PWD/<path>+.  Also ensures that the path is relative to the
+  # +@droplet_root+ of the class.
+  def qualify_path(path)
+    "$PWD/#{path.relative_path_from(@droplet_root)}"
+  end
+
 end

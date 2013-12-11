@@ -17,7 +17,7 @@
 require 'spec_helper'
 require 'application_helper'
 require 'buildpack_cache_helper'
-require 'diagnostics_helper'
+require 'logging_helper'
 require 'internet_availability_helper'
 require 'fileutils'
 require 'java_buildpack/util/download_cache'
@@ -25,7 +25,7 @@ require 'java_buildpack/util/internet_availability'
 
 describe JavaBuildpack::Util::DownloadCache do
   include_context 'application_helper'
-  include_context 'diagnostics_helper'
+  include_context 'logging_helper'
   include_context 'internet_availability_helper'
 
   let(:download_cache) { described_class.new(app_dir) }

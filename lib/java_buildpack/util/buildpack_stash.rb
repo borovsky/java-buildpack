@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'java_buildpack/diagnostics/logger_factory'
+require 'java_buildpack/logging/logger_factory'
 require 'java_buildpack/util'
 require 'java_buildpack/util/file_cache'
 require 'uri'
@@ -27,8 +27,8 @@ module JavaBuildpack::Util
 
     # Creates an instance of the buildpack stash.
     def initialize
-      @logger = JavaBuildpack::Diagnostics::LoggerFactory.get_logger
-      buildpack_cache = ENV['BUILDPACK_CACHE']
+      @logger          = JavaBuildpack::Logging::LoggerFactory.get_logger BuildpackStash
+      buildpack_cache  = ENV['BUILDPACK_CACHE']
       @buildpack_stash = buildpack_cache ? Pathname.new(buildpack_cache) + 'java-buildpack' : nil
     end
 
@@ -40,15 +40,15 @@ module JavaBuildpack::Util
     def look_aside(mutable_file_cache, uri)
       fail "Buildpack cache not defined. Cannot look up #{uri}." unless @buildpack_stash
 
-      key = URI.escape(uri, '/')
+      key     = URI.escape(uri, '/')
       stashed = @buildpack_stash + "#{key}.cached"
       @logger.debug { "Looking in buildpack cache for file '#{stashed}'" }
       if stashed.exist?
         mutable_file_cache.persist_file stashed
-        @logger.debug "Using copy of #{uri} from buildpack cache."
+        @logger.debug { "Using copy of #{uri} from buildpack cache." }
       else
         message = "Buildpack cache does not contain #{uri}"
-        @logger.error message
+        @logger.error { message }
         @logger.debug { "Buildpack cache contents:\n#{`ls -lR #{@buildpack_stash}`}" }
         fail message
       end

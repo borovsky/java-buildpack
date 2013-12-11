@@ -16,14 +16,13 @@
 
 require 'spec_helper'
 require 'application_helper'
-require 'diagnostics_helper'
-require 'logger'
+require 'logging_helper'
 require 'java_buildpack/buildpack'
 require 'java_buildpack/util/java_main_utils'
 
 describe JavaBuildpack::Util::JavaMainUtils do
   include_context 'application_helper'
-  include_context 'diagnostics_helper'
+  include_context 'logging_helper'
 
   let(:test_class_name) { 'test-java-main-class' }
 

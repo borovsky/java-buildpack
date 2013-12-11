@@ -14,20 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'java_buildpack/diagnostics/logger_factory'
+require 'java_buildpack/component/versioned_dependency_component'
+require 'java_buildpack/logging/logger_factory'
 require 'java_buildpack/framework'
 require 'java_buildpack/framework/spring_auto_reconfiguration/web_xml_modifier'
-require 'java_buildpack/versioned_dependency_component'
 
 module JavaBuildpack::Framework
 
   # Encapsulates the detect, compile, and release functionality for enabling cloud auto-reconfiguration in Spring
   # applications.
-  class SpringAutoReconfiguration < JavaBuildpack::VersionedDependencyComponent
+  class SpringAutoReconfiguration < JavaBuildpack::Component::VersionedDependencyComponent
 
     def initialize(context)
-      super('Spring Auto-reconfiguration', context)
-      @logger = JavaBuildpack::Diagnostics::LoggerFactory.get_logger
+      super(context)
+      @logger = JavaBuildpack::Logging::LoggerFactory.get_logger SpringAutoReconfiguration
     end
 
     def compile

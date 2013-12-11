@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'java_buildpack/base_component'
+require 'java_buildpack/component/base_component'
 require 'java_buildpack/container'
 require 'java_buildpack/util/java_main_utils'
 
@@ -23,7 +23,7 @@ module JavaBuildpack::Container
   # Encapsulates the detect, compile, and release functionality for applications running a simple Java +main()+ method.
   # This isn't a _container_ in the traditional sense, but contains the functionality to manage the lifecycle of Java
   # +main()+ applications.
-  class Main < JavaBuildpack::BaseComponent
+  class Main < JavaBuildpack::Component::BaseComponent
 
     def initialize(context)
       super('Java Main', context)

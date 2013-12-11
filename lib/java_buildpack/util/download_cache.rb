@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'java_buildpack/diagnostics/logger_factory'
+require 'java_buildpack/logging/logger_factory'
 require 'java_buildpack/util'
 require 'java_buildpack/util/buildpack_stash'
 require 'java_buildpack/util/file_cache'
@@ -41,9 +41,9 @@ module JavaBuildpack::Util
     #
     # @param [String] cache_root the filesystem directory in which to cache downloaded files
     def initialize(cache_root = Pathname.new(Dir.tmpdir))
-      @cache_root = cache_root
+      @cache_root      = cache_root
       @buildpack_stash = BuildpackStash.new
-      @logger = JavaBuildpack::Diagnostics::LoggerFactory.get_logger
+      @logger          = JavaBuildpack::Logging::LoggerFactory.get_logger DownloadCache
     end
 
     # Retrieves an item from the cache. Yields an open file containing the item's content or raises an exception if
@@ -184,7 +184,7 @@ module JavaBuildpack::Util
       if InternetAvailability.use_internet?
         download(mutable_file_cache, uri)
       else
-        @logger.debug "Unable to download #{uri}. Looking in buildpack cache."
+        @logger.debug { "Unable to download #{uri}. Looking in buildpack cache." }
         @buildpack_stash.look_aside(mutable_file_cache, uri)
       end
     end
@@ -214,9 +214,9 @@ module JavaBuildpack::Util
     end
 
     def cache_ready?(immutable_file_cache, uri)
-      use_internet = InternetAvailability.use_internet?
-      cached = immutable_file_cache.cached?
-      has_etag = immutable_file_cache.has_etag?
+      use_internet      = InternetAvailability.use_internet?
+      cached            = immutable_file_cache.cached?
+      has_etag          = immutable_file_cache.has_etag?
       has_last_modified = immutable_file_cache.has_last_modified?
       @logger.debug { "should_use_cache for #{uri}, inputs: use_internet? = #{use_internet}, cached? = #{cached}, has_etag? = #{has_etag}, has_last_modified? = #{has_last_modified}" }
 
@@ -249,7 +249,10 @@ module JavaBuildpack::Util
       issue_http_request(request, uri) do |_, response_code|
         @logger.debug { "Up-to-date check on cached version of #{uri} returned #{response_code}" }
         if response_code != HTTP_OK
-          @logger.warn "Unable to check whether or not #{uri} has been modified due to #{response_code}. Using cached version." if response_code != HTTP_NOT_MODIFIED
+          if response_code != HTTP_NOT_MODIFIED
+            @logger.warn { "Unable to check whether or not #{uri} has been modified due to #{response_code}. Using cached version." }
+          end
+
           use_cache = true
         end
       end

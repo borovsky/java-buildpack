@@ -14,9 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'java_buildpack/base_component'
+require 'java_buildpack/component/base_component'
 require 'java_buildpack/framework'
-require 'java_buildpack/util/service_utils'
 require 'tmpdir'
 require 'fileutils'
 require 'uri'
@@ -24,7 +23,7 @@ require 'uri'
 module JavaBuildpack::Framework
 
   # Encapsulates the detect, compile, and release functionality for enabling Insight auto configuration.
-  class SpringInsight < JavaBuildpack::BaseComponent
+  class SpringInsight < JavaBuildpack::Component::BaseComponent
 
     def initialize(context)
       super('Spring Insight', context)
@@ -114,7 +113,6 @@ module JavaBuildpack::Framework
     end
 
     def install_insight(agent_dir)
-      FileUtils.rm_rf home
       FileUtils.mkdir_p home
 
       root = Pathname.glob(agent_dir + 'springsource-insight-uber-agent-*')[0]

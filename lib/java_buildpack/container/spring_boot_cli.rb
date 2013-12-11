@@ -15,16 +15,16 @@
 # limitations under the License.
 
 require 'fileutils'
+require 'java_buildpack/component/versioned_dependency_component'
 require 'java_buildpack/container'
 require 'java_buildpack/util/format_duration'
 require 'java_buildpack/util/groovy_utils'
-require 'java_buildpack/versioned_dependency_component'
 
 module JavaBuildpack::Container
 
   # Encapsulates the detect, compile, and release functionality for applications running Spring Boot CLI
   # applications.
-  class SpringBootCli < JavaBuildpack::VersionedDependencyComponent
+  class SpringBootCli < JavaBuildpack::Component::VersionedDependencyComponent
 
     def initialize(context)
       super('Spring Boot CLI', context)

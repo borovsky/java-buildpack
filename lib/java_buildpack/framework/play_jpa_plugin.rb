@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require 'java_buildpack/component/versioned_dependency_component'
 require 'java_buildpack/framework'
 require 'java_buildpack/util/play/factory'
-require 'java_buildpack/versioned_dependency_component'
 
 module JavaBuildpack::Framework
 
@@ -24,7 +24,7 @@ module JavaBuildpack::Framework
   # applications that use JPA. Note that Spring auto-reconfiguration is covered by the SpringAutoReconfiguration
   # framework. The reconfiguration performed here is to override Play application configuration to bind a Play
   # application to cloud resources.
-  class PlayJpaPlugin < JavaBuildpack::VersionedDependencyComponent
+  class PlayJpaPlugin < JavaBuildpack::Component::VersionedDependencyComponent
 
     def initialize(context)
       super('Play JPA Plugin', context)

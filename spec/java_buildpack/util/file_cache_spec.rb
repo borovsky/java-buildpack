@@ -15,11 +15,11 @@
 # limitations under the License.
 
 require 'spec_helper'
-require 'diagnostics_helper'
+require 'logging_helper'
 require 'java_buildpack/util/file_cache'
 
 describe JavaBuildpack::Util::FileCache do
-  include_context 'diagnostics_helper'
+  include_context 'logging_helper'
 
   let(:file_cache) { described_class.new(app_dir, 'http://foo-uri/') }
 

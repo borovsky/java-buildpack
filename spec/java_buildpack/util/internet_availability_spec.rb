@@ -15,14 +15,14 @@
 # limitations under the License.
 
 require 'spec_helper'
-require 'diagnostics_helper'
 require 'internet_availability_helper'
+require 'logging_helper'
 require 'java_buildpack/util/configuration_utils'
 require 'java_buildpack/util/internet_availability'
 
 describe JavaBuildpack::Util::InternetAvailability do
-  include_context 'diagnostics_helper'
   include_context 'internet_availability_helper'
+  include_context 'logging_helper'
 
   it 'should use internet by default' do
     expect(described_class.use_internet?).to be

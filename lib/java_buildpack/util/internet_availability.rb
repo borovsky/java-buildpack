@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'java_buildpack/diagnostics/logger_factory'
+require 'java_buildpack/logging/logger_factory'
 require 'java_buildpack/util'
 require 'java_buildpack/util/configuration_utils'
 require 'monitor'
@@ -65,7 +65,7 @@ module JavaBuildpack::Util
     # @param [String] reason a diagnostic which indicates why the internet should be deemed unavailable
     def self.internet_unavailable(reason)
       if internet_availability_stored?
-        JavaBuildpack::Diagnostics::LoggerFactory.get_logger.error(reason)
+        logger.error { reason }
       end
       store_internet_availability false
     end
@@ -88,9 +88,13 @@ module JavaBuildpack::Util
 
     private
 
+    def self.logger
+      JavaBuildpack::Logging::LoggerFactory.get_logger InternetAvailability
+    end
+
     def self.store_internet_availability(internet_up)
       @@monitor.synchronize do
-        @@internet_up = internet_up
+        @@internet_up      = internet_up
         @@internet_checked = true
       end
     end

@@ -14,11 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require 'java_buildpack/component/versioned_dependency_component'
 require 'java_buildpack/container'
 require 'java_buildpack/util/class_file_utils'
 require 'java_buildpack/util/format_duration'
 require 'java_buildpack/util/groovy_utils'
-require 'java_buildpack/versioned_dependency_component'
 require 'pathname'
 require 'set'
 require 'tmpdir'
@@ -27,7 +27,7 @@ module JavaBuildpack::Container
 
   # Encapsulates the detect, compile, and release functionality for applications running non-compiled Groovy
   # applications.
-  class Groovy < JavaBuildpack::VersionedDependencyComponent
+  class Groovy < JavaBuildpack::Component::VersionedDependencyComponent
 
     def initialize(context)
       super('Groovy', context) { |candidate_version| candidate_version.check_size(3) }

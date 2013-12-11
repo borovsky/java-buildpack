@@ -14,17 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'spec_helper'
-require 'application_helper'
-require 'pathname'
+require 'java_buildpack'
 
-shared_context 'additional_libs_helper' do
-  include_context 'application_helper'
-
-  let(:additional_libs_dir) { Pathname.new(application.additional_libraries) }
-
-  before do
-    FileUtils.cp_r 'spec/fixtures/additional_libs/.', additional_libs_dir
-  end
-
+# A module encapsulating the logging for the Java buildpack
+module JavaBuildpack::Logging
 end

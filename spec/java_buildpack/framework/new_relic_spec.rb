@@ -16,39 +16,18 @@
 
 require 'spec_helper'
 require 'component_helper'
-require 'java_buildpack/framework/new_relic'
+require 'java_buildpack/framework/new_relic_agent'
 
-describe JavaBuildpack::Framework::NewRelic, service_type: 'newrelic-n/a' do
+describe JavaBuildpack::Framework::NewRelicAgent, :focus, :show_output do
   include_context 'component_helper'
 
-  let(:service_credentials) { { 'licenseKey' => 'test-license-key' } }
-
   it 'should detect with newrelic-n/a service' do
+    allow(services).to receive(:one?).and_return(true)
     expect(component.detect).to eq("new-relic-agent=#{version}")
   end
 
-  context do
-    let(:vcap_services) { {} }
-
-    it 'should not detect without newrelic-n/a service' do
-      expect(component.detect).to be_nil
-    end
-  end
-
-  context do
-    let(:service_payload) { [{ 'credentials' => service_credentials }, { 'credentials' => service_credentials }] }
-
-    it 'should fail with multiple newrelic-n/a services' do
-      expect { component.detect }.to raise_error /Exactly one service/
-    end
-  end
-
-  context do
-    let(:service_payload) { [] }
-
-    it 'should fail with zero newrelic-n/a services' do
-      expect { component.detect }.to raise_error /Exactly one service/
-    end
+  it 'should not detect without newrelic-n/a service' do
+    expect(component.detect).to be_nil
   end
 
   it 'should download New Relic agent JAR',
@@ -56,7 +35,7 @@ describe JavaBuildpack::Framework::NewRelic, service_type: 'newrelic-n/a' do
 
     component.compile
 
-    expect(app_dir + ".new-relic-agent/new-relic-agent-#{version}.jar").to exist
+    expect(app_dir + ".java-buildpack/newrelic/new-relic-#{version}.jar").to exist
   end
 
   it 'should copy resources',
@@ -64,17 +43,20 @@ describe JavaBuildpack::Framework::NewRelic, service_type: 'newrelic-n/a' do
 
     component.compile
 
-    expect(app_dir + '.new-relic-agent/newrelic.yml').to exist
+    expect(app_dir + '.java-buildpack/newrelic/newrelic.yml').to exist
   end
 
   it 'should update JAVA_OPTS' do
+    allow(services).to receive(:one?).and_return(true)
+    allow(services).to receive(:find_service).and_return({ 'credentials' => { 'licenseKey' => 'test-license-key' } })
+
     component.release
 
-    expect(java_opts).to include("-javaagent:$PWD/.new-relic-agent/new-relic-agent-#{version}.jar")
-    expect(java_opts).to include('-Dnewrelic.home=$PWD/.new-relic-agent')
+    expect(java_opts).to include("-javaagent:$PWD/.java-buildpack/newrelic/newrelic-#{version}.jar")
+    expect(java_opts).to include('-Dnewrelic.home=$PWD/.java-buildpack/newrelic')
     expect(java_opts).to include('-Dnewrelic.config.license_key=test-license-key')
     expect(java_opts).to include("-Dnewrelic.config.app_name='test-application-name'")
-    expect(java_opts).to include('-Dnewrelic.config.log_file_path=$PWD/.new-relic-agent/logs')
+    expect(java_opts).to include('-Dnewrelic.config.log_file_path=$PWD/.java-buildpack/newrelic/logs')
   end
 
 end

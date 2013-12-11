@@ -19,7 +19,7 @@ require 'component_helper'
 require 'java_buildpack/jre/openjdk'
 require 'java_buildpack/jre/memory/weight_balancing_memory_heuristic'
 
-describe JavaBuildpack::Jre::OpenJdk do
+describe JavaBuildpack::Jre::OpenJDK do
   include_context 'component_helper'
 
   let(:memory_heuristic) { double('MemoryHeuristic', resolve: %w(opt-1 opt-2)) }
@@ -37,13 +37,13 @@ describe JavaBuildpack::Jre::OpenJdk do
 
     component.compile
 
-    expect(app_dir + '.openjdk/bin/java').to exist
+    expect(app_dir + '.java-buildpack/openjdk/bin/java').to exist
   end
 
   it 'adds the JAVA_HOME to java_home' do
     component
 
-    expect(java_home).to eq('$PWD/.openjdk')
+    expect(java_home.root).to eq('$PWD/.java-buildpack/openjdk')
   end
 
   it 'should add memory options to java_opts' do
@@ -56,7 +56,7 @@ describe JavaBuildpack::Jre::OpenJdk do
   it 'adds OnOutOfMemoryError to java_opts' do
     component.release
 
-    expect(java_opts).to include('-XX:OnOutOfMemoryError=$PWD/.openjdk/bin/killjava')
+    expect(java_opts).to include('-XX:OnOutOfMemoryError=$PWD/.java-buildpack/openjdk/bin/killjava')
   end
 
   it 'places the killjava script (with appropriately substituted content) in the diagnostics directory',
@@ -64,7 +64,7 @@ describe JavaBuildpack::Jre::OpenJdk do
 
     component.compile
 
-    expect((app_dir + '.openjdk/bin/killjava').read).to include '}/../../.buildpack-diagnostics/buildpack.log'
+    expect((app_dir + '.java-buildpack/openjdk/bin/killjava').read).to include '}/../../../.java-buildpack.log'
   end
 
   it 'adds java.io.tmpdir to java_opts' do

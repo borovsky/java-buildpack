@@ -14,34 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'fileutils'
-require 'java_buildpack/application'
-require 'pathname'
+require 'java_buildpack/component'
+require 'java_buildpack/component/qualify_path'
 
-module JavaBuildpack::Application
+module JavaBuildpack::Component
 
-  # An abstraction encapsulating the additional libraries attached to an application
-  class AdditionalLibraries < Pathname
+  # An abstraction around the additional libraries provided to a droplet by components.
+  #
+  # A new instance of this type should be created once for the application.
+  class AdditionalLibraries < Array
+    include JavaBuildpack::Component
 
-    # Creates an instance of the +JAVA_HOME+ abstraction.
+    # Creates an instance of the +JAVA_OPTS+ abstraction.
     #
-    # @param [Pathname] root the root directory of the application
-    def initialize(root)
-      @root = root
-      @additional_paths = []
-      @additional_libraries = @root + LIB_DIRECTORY
-      FileUtils.mkdir_p @additional_libraries
-
-      super(@additional_libraries)
-    end
-
-    # Add an additional path to the additional libraries collection
-    #
-    # @param [Pathname] path the path to add
-    # @return [AdditionalLibraries] self to facilitate chaining
-    def add(path)
-      @additional_paths << path
-      self
+    # @param [Pathname] droplet_root the root directory of the droplet
+    def initialize(droplet_root)
+      @paths        = []
+      @droplet_root = droplet_root
     end
 
     # Returns the contents of the collection as a classpath formatted as +-cp <value1>:<value2>+
@@ -59,26 +48,6 @@ module JavaBuildpack::Application
     def link_to(destination)
       FileUtils.mkdir_p destination
       paths.each { |path| (destination + path.basename).make_symlink(path.relative_path_from(destination)) }
-    end
-
-    # The paths to the additional libraries
-    #
-    # @return [Array<Pathname>] the paths to the additional libraries
-    def paths
-      paths = []
-      paths.concat @additional_paths
-      paths.concat @additional_libraries.children
-                   .select { |child| child.extname == '.jar' }
-
-      paths.sort
-    end
-
-    private
-
-    LIB_DIRECTORY = '.additional-libraries'.freeze
-
-    def qualify_path(path)
-      "$PWD/#{path.relative_path_from @root}"
     end
 
   end

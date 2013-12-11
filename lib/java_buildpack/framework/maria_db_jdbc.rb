@@ -15,14 +15,13 @@
 # limitations under the License.
 
 require 'fileutils'
+require 'java_buildpack/component/versioned_dependency_component'
 require 'java_buildpack/framework'
-require 'java_buildpack/util/service_utils'
-require 'java_buildpack/versioned_dependency_component'
 
 module JavaBuildpack::Framework
 
   # Encapsulates the functionality for enabling the MariaDB JDBC client.
-  class MariaDbJdbc < JavaBuildpack::VersionedDependencyComponent
+  class MariaDbJdbc < JavaBuildpack::Component::VersionedDependencyComponent
 
     def initialize(context)
       super('MariaDB JDBC', context)

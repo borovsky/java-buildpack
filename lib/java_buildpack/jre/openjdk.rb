@@ -15,30 +15,30 @@
 # limitations under the License.
 
 require 'fileutils'
-require 'java_buildpack/diagnostics/common'
+require 'java_buildpack/component/versioned_dependency_component'
+require 'java_buildpack/logging/logger_factory'
 require 'java_buildpack/jre'
 require 'java_buildpack/jre/memory/openjdk_memory_heuristic_factory'
 require 'java_buildpack/util/format_duration'
-require 'java_buildpack/versioned_dependency_component'
 
 module JavaBuildpack::Jre
 
   # Encapsulates the detect, compile, and release functionality for selecting an OpenJDK JRE.
-  class OpenJdk < JavaBuildpack::VersionedDependencyComponent
+  class OpenJDK < JavaBuildpack::Component::VersionedDependencyComponent
 
     def initialize(context)
-      super('OpenJDK', context)
-      @application.java_home.set home
+      super(context)
+      @droplet.java_home.root = @droplet.sandbox
     end
 
     def compile
       download_tar
-      copy_resources
+      @droplet.copy_resources
       mutate_killjava
     end
 
     def release
-      @application.java_opts
+      @droplet.java_opts
       .add_system_property('java.io.tmpdir', '$TMPDIR')
       .add_option('-XX:OnOutOfMemoryError', killjava)
       .concat memory
@@ -57,7 +57,7 @@ module JavaBuildpack::Jre
     KEY_MEMORY_SIZES = 'memory_sizes'.freeze
 
     def killjava
-      home + 'bin/killjava'
+      @droplet.sandbox + 'bin/killjava'
     end
 
     def memory
@@ -69,7 +69,7 @@ module JavaBuildpack::Jre
     def mutate_killjava
       content = killjava.read
       content.gsub! /@@LOG_FILE_NAME@@/,
-                    JavaBuildpack::Diagnostics.get_buildpack_log(@application).relative_path_from(killjava.dirname).to_s
+                    JavaBuildpack::Logging::LoggerFactory.log_file.relative_path_from(killjava.dirname).to_s
 
       killjava.open('w') do |f|
         f.write content

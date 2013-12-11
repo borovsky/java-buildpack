@@ -16,13 +16,13 @@
 
 require 'spec_helper'
 require 'application_helper'
-require 'diagnostics_helper'
+require 'logging_helper'
 require 'internet_availability_helper'
 require 'java_buildpack/util/application_cache'
 
 describe JavaBuildpack::Util::ApplicationCache do
   include_context 'application_helper'
-  include_context 'diagnostics_helper'
+  include_context 'logging_helper'
   include_context 'internet_availability_helper'
 
   previous_arg_value = ARGV[1]

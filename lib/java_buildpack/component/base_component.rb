@@ -15,12 +15,11 @@
 # limitations under the License.
 
 require 'fileutils'
-require 'java_buildpack'
-require 'java_buildpack/application/application'
+require 'java_buildpack/component'
 require 'java_buildpack/util/application_cache'
 require 'java_buildpack/util/shell'
 
-module JavaBuildpack
+module JavaBuildpack::Component
 
   # A convenience base class for all components in the buildpack.  This base class ensures that the contents of the
   # +context+ are assigned to instance variables matching their keys.  It also ensures that all contract methods are
@@ -28,30 +27,29 @@ module JavaBuildpack
   class BaseComponent
     include JavaBuildpack::Util::Shell
 
-    # @!attribute [r] size
-    #   @return [String] the name of this component
+    # @!attribute [r] component_name
+    #   @return [String] the name of the component as determined by the buildpack
     attr_reader :component_name
 
-    # Creates an instance.  The contents of +context+ are assigned to instance variables matching their keys.
-    # +component_name+ and +context+ are exposed via +@component_name+ and +@context+ respectively for any component
-    # that wishes to use them.  An additional +@parsable_component_name+ is exposed that is a lowercased and space-
-    # removed version of +component_name+.
+    # Creates an instance.  The contents of +context+ are assigned to the instance variables matching their keys.
     #
-    # @param [String] component_name The name of the component
-    # @param [Hash] context A shared context provided to all components
-    def initialize(component_name, context)
-      @component_name = component_name
-      @parsable_component_name = component_name.gsub(/ /, '-').downcase
-
-      @context = context
-      @context.each { |key, value| instance_variable_set("@#{key}", value) }
+    # @param [Hash] context a collection of utilities used by components
+    # @option context [JavaBuildpack::Component::Application] :application the application
+    # @option context [String] :component_name the name of the component as determined by the buildpack
+    # @option context [Hash] :configuration the component's configuration
+    # @option context [JavaBuildpack::Component::Droplet] :droplet the droplet
+    def initialize(context)
+      @application    = context[:application]
+      @component_name = context[:component_name]
+      @configuration  = context[:configuration]
+      @droplet        = context[:droplet]
     end
 
     # If the component should be used when staging an application
     #
     # @return [Array<String>, String, nil] If the component should be used when staging the application, a +String+ or
     #                                      an +Array<String>+ that uniquely identifies the component (e.g.
-    #                                      +openjdk=1.7.0_40+).  Otherwise, +nil+.
+    #                                      +open_jdk=1.7.0_40+).  Otherwise, +nil+.
     def detect
       fail "Method 'detect' must be defined"
     end
@@ -79,14 +77,6 @@ module JavaBuildpack
 
     protected
 
-    # Copy resources from a components resources directory to a directory
-    #
-    # @param [Pathname] target_directory the directory to copy to.  Default to a component's +home+
-    def copy_resources(target_directory = home)
-      resources = Pathname.new(File.expand_path('../../../resources', __FILE__)) + @parsable_component_name
-      FileUtils.cp_r((resources.to_s + '/.'), target_directory) if resources.exist?
-    end
-
     # Downloads an item with the given name and version from the given URI, then yields the resultant file to the given
     # block.
     #
@@ -104,25 +94,18 @@ module JavaBuildpack
       end
     end
 
-    # Downloads a given JAR and copies it to a given destination.
-    #
-    # @param [JavaBuildpack::Util::TokenizedVersion] version the version of the item
-    # @param [String] uri the URI of the item
-    # @param [String] jar_name the filename of the item
-    # @param [String] target_directory the path of the directory into which to download the item. Defaults to
-    #                                  +@lib_directory+
-    # @param [String] description an optional description for the download.  Defaults to +@component_name+.
-    def download_jar(version, uri, jar_name, target_directory = @lib_directory, description = @component_name)
-      FileUtils.mkdir_p target_directory
-      download(version, uri, description) { |file| FileUtils.cp file.path, (target_directory + jar_name) }
-    end
-
-    # The home directory for this component
-    #
-    # @return [Pathname] the home directory for this component
-    def home
-      @application.component_directory @parsable_component_name
-    end
+    ## Downloads a given JAR and copies it to a given destination.
+    ##
+    ## @param [JavaBuildpack::Util::TokenizedVersion] version the version of the item
+    ## @param [String] uri the URI of the item
+    ## @param [String] jar_name the filename of the item
+    ## @param [String] target_directory the path of the directory into which to download the item. Defaults to
+    ##                                  +@lib_directory+
+    ## @param [String] description an optional description for the download.  Defaults to +@component_name+.
+    #def download_jar(version, uri, jar_name, target_directory = @lib_directory, description = @component_name)
+    #  FileUtils.mkdir_p target_directory
+    #  download(version, uri, description) { |file| FileUtils.cp file.path, (target_directory + jar_name) }
+    #end
 
   end
 

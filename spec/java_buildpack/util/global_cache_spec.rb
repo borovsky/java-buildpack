@@ -16,12 +16,12 @@
 
 require 'spec_helper'
 require 'buildpack_cache_helper'
-require 'diagnostics_helper'
+require 'logging_helper'
 require 'internet_availability_helper'
 require 'java_buildpack/util/global_cache'
 
 describe JavaBuildpack::Util::GlobalCache do
-  include_context 'diagnostics_helper'
+  include_context 'logging_helper'
   include_context 'internet_availability_helper'
 
   it 'should raise an error if BUILDPACK_CACHE is not defined' do

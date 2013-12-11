@@ -15,9 +15,9 @@
 # limitations under the License.
 
 require 'spec_helper'
-require 'java_buildpack/versioned_dependency_component'
+require 'java_buildpack/component/versioned_dependency_component'
 
-describe JavaBuildpack::VersionedDependencyComponent do
+describe JavaBuildpack::Component::VersionedDependencyComponent do
 
   let(:versioned_dependency_component) { StubVersionedDependencyComponent.new 'test-name', {} }
 
@@ -29,7 +29,7 @@ describe JavaBuildpack::VersionedDependencyComponent do
 
 end
 
-class StubVersionedDependencyComponent < JavaBuildpack::VersionedDependencyComponent
+class StubVersionedDependencyComponent < JavaBuildpack::Component::VersionedDependencyComponent
 
   def initialize(component_name, context)
     super(component_name, context)

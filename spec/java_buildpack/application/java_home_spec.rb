@@ -14,20 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'spec_helper'
-require 'application_helper'
-
-describe JavaBuildpack::Application::JavaHome do
-  include_context 'application_helper'
-
-  let(:java_home) { application.component_directory('test-java-home') }
-
-  before do
-    application.java_home.set java_home
-  end
-
-  it 'should set JAVA_HOME environment variable' do
-    application.java_home.do_with { expect(ENV['JAVA_HOME']).to eq("$PWD/#{java_home.relative_path_from app_dir}") }
-  end
-
-end
+#require 'spec_helper'
+#require 'application_helper'
+#
+#describe JavaBuildpack::Application::JavaHome do
+#  include_context 'application_helper'
+#
+#  let(:java_home) { application.component_directory('test-java-home') }
+#
+#  before do
+#    application.java_home.set java_home
+#  end
+#
+#  it 'should set JAVA_HOME environment variable' do
+#    application.java_home.do_with { expect(ENV['JAVA_HOME']).to eq("$PWD/#{java_home.relative_path_from app_dir}") }
+#  end
+#
+#end

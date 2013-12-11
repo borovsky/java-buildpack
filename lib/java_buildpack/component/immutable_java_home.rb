@@ -14,33 +14,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'java_buildpack/application'
+require 'java_buildpack/component'
 
-module JavaBuildpack::Application
+module JavaBuildpack::Component
 
-  # An abstraction encapsulating the +JAVA_HOME+ of an application
-  class JavaHome < String
+  # An abstraction around the +JAVA_HOME+ path used by the droplet.  This implementation is immutable and should be
+  # passed to any component that is not a jre.
+  #
+  # A new instance of this type should be created once for the application.
+  class ImmutableJavaHome
 
-    # Creates an instance of the +JAVA_HOME+ abstraction.
+    # Creates a new instance of the java home abstraction
     #
-    # @param [Pathname] root the root directory of the application
-    def initialize(root)
-      super('')
-      @root = root
+    # @param [MutableJavaHome] delegate the instance of +MutableJavaHome+ to use as a delegate for +root+ calls
+    def initialize(delegate)
+      @delegate = delegate
     end
 
-    # Sets the path to +JAVA_HOME+
+    # Returns the path of +JAVA_HOME+ as an environment variable formatted as +JAVA_HOME="$PWD/<value>"+
     #
-    # @param [Pathname] path the path to +JAVA_HOME+
-    def set(path)
-      clear.concat "$PWD/#{path.relative_path_from(@root)}"
-    end
-
-    # Returns the contents as an environment variable formatted as +JAVA_HOME="<value>"+
-    #
-    # @return [String] the contents as an environment variable
+    # @return [String] the path of +JAVA_HOME+ as an environment variable
     def as_env_var
-      "JAVA_HOME=#{self}"
+      "JAVA_HOME=$PWD/#{root}"
     end
 
     # Execute a block with the +JAVA_HOME+ environment variable set
@@ -49,11 +44,16 @@ module JavaBuildpack::Application
     def do_with
       previous_value = ENV['JAVA_HOME']
       begin
-        ENV['JAVA_HOME'] = to_s
+        ENV['JAVA_HOME'] = root
         yield
       ensure
         ENV['JAVA_HOME'] = previous_value
       end
+    end
+
+    # @return [String] the root of the droplet's +JAVA_HOME+
+    def root
+      @delegate.root
     end
 
   end

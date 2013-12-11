@@ -16,11 +16,11 @@
 
 require 'spec_helper'
 require 'buildpack_cache_helper'
-require 'diagnostics_helper'
+require 'logging_helper'
 require 'java_buildpack/util/buildpack_stash'
 
 describe JavaBuildpack::Util::BuildpackStash do
-  include_context 'diagnostics_helper'
+  include_context 'logging_helper'
 
   let(:buildpack_stash) { described_class.new }
 
