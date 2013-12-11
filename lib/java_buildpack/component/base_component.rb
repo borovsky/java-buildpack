@@ -18,6 +18,7 @@ require 'fileutils'
 require 'java_buildpack/component'
 require 'java_buildpack/util/application_cache'
 require 'java_buildpack/util/shell'
+require 'java_buildpack/util/space_case'
 
 module JavaBuildpack::Component
 
@@ -35,12 +36,11 @@ module JavaBuildpack::Component
     #
     # @param [Hash] context a collection of utilities used by components
     # @option context [JavaBuildpack::Component::Application] :application the application
-    # @option context [String] :component_name the name of the component as determined by the buildpack
     # @option context [Hash] :configuration the component's configuration
     # @option context [JavaBuildpack::Component::Droplet] :droplet the droplet
     def initialize(context)
       @application    = context[:application]
-      @component_name = context[:component_name]
+      @component_name = self.class.to_s.space_case
       @configuration  = context[:configuration]
       @droplet        = context[:droplet]
     end
@@ -82,11 +82,11 @@ module JavaBuildpack::Component
     #
     # @param [JavaBuildpack::Util::TokenizedVersion] version
     # @param [String] uri
-    # @param [String] description an optional description for the download.  Defaults to +@component_name+.
+    # @param [String] name an optional name for the download.  Defaults to +@component_name+.
     # @return [void]
-    def download(version, uri, description = @component_name, &block)
+    def download(version, uri, name = @component_name, &block)
       download_start_time = Time.now
-      print "-----> Downloading #{description} #{version} from #{uri} "
+      print "-----> Downloading #{name} #{version} from #{uri} "
 
       JavaBuildpack::Util::ApplicationCache.new.get(uri) do |file| # TODO: Use global cache #50175265
         puts "(#{(Time.now - download_start_time).duration})"
@@ -101,10 +101,10 @@ module JavaBuildpack::Component
     ## @param [String] jar_name the filename of the item
     ## @param [String] target_directory the path of the directory into which to download the item. Defaults to
     ##                                  +@lib_directory+
-    ## @param [String] description an optional description for the download.  Defaults to +@component_name+.
-    #def download_jar(version, uri, jar_name, target_directory = @lib_directory, description = @component_name)
+    ## @param [String] name an optional name for the download.  Defaults to +@component_name+.
+    #def download_jar(version, uri, jar_name, target_directory = @lib_directory, name = @component_name)
     #  FileUtils.mkdir_p target_directory
-    #  download(version, uri, description) { |file| FileUtils.cp file.path, (target_directory + jar_name) }
+    #  download(version, uri, name) { |file| FileUtils.cp file.path, (target_directory + jar_name) }
     #end
 
   end

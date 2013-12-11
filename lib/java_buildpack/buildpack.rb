@@ -136,7 +136,6 @@ module JavaBuildpack
         component_id = component.split('::').last.snake_case
         context      = {
             application:   application,
-            component_name: component.split('::').last.space_case,
             configuration: Util::ConfigurationUtils.load(component_id),
             droplet:       Component::Droplet.new(additional_libraries, component_id, java_home, java_opts, root) }
 
@@ -162,7 +161,7 @@ module JavaBuildpack
     end
 
     def names(components)
-      components.map { |component| component.component_name }.join(', ')
+      components.map { |component| component.class.to_s.space_case }.join(', ')
     end
 
     def require_component(component)

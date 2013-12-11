@@ -16,6 +16,7 @@
 
 require 'fileutils'
 require 'java_buildpack/component'
+require 'java_buildpack/logging/logger_factory'
 
 module JavaBuildpack::Component
 
@@ -68,6 +69,7 @@ module JavaBuildpack::Component
       @component_id         = component_id
       @java_home            = java_home
       @java_opts            = java_opts
+      @logger               = JavaBuildpack::Logging::LoggerFactory.get_logger Droplet
       @root                 = root
 
       @sandbox = root + '.java-buildpack' + component_id
@@ -79,7 +81,13 @@ module JavaBuildpack::Component
     # @param [Pathname] target_directory the directory to copy to.  Default to a component's +sandbox+
     def copy_resources(target_directory = @sandbox)
       resources = RESOURCES_DIRECTORY + @component_id
-      FileUtils.cp_r("#{resources}/.", target_directory) if resources.exist?
+
+      if resources.exist?
+        FileUtils.cp_r("#{resources}/.", target_directory)
+        @logger.debug { "Resources #{resources} found" }
+      else
+        @logger.debug { "No resources #{resources} found" }
+      end
     end
 
     private

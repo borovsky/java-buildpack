@@ -27,7 +27,7 @@ shared_context 'droplet_helper' do
 
   let(:additional_libraries) { JavaBuildpack::Component::AdditionalLibraries.new app_dir }
 
-  let(:component_id) { described_class.to_s.match(/^(?:.*::)?(.*)$/)[1].downcase }
+  let(:component_id) { described_class.to_s.split('::').last.snake_case }
 
   let(:droplet) do
     JavaBuildpack::Component::Droplet.new additional_libraries, component_id, java_home, java_opts, app_dir

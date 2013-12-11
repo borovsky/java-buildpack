@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# A mixin that adds the ability to turn a +String+ into a constant.
+# A mixin that adds the ability to turn a +String+ into snake case
 class String
 
   # Converts a string to snake case

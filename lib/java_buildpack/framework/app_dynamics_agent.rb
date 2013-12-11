@@ -21,10 +21,10 @@ require 'java_buildpack/framework'
 module JavaBuildpack::Framework
 
   # Encapsulates the functionality for enabling zero-touch AppDynamics support.
-  class AppDynamics < JavaBuildpack::Component::VersionedDependencyComponent
+  class AppDynamicsAgent < JavaBuildpack::Component::VersionedDependencyComponent
 
     def initialize(context)
-      super('AppDynamics Agent', context)
+      super(context)
     end
 
     def compile
@@ -32,12 +32,12 @@ module JavaBuildpack::Framework
     end
 
     def release
-      credentials = JavaBuildpack::Util::ServiceUtils.find_service(@vcap_services, SERVICE_NAME)['credentials']
-      java_opts = @application.java_opts
+      credentials = @application.services.find_service(FILTER)['credentials']
+      java_opts   = @droplet.java_opts
 
       java_opts
-      .add_javaagent(home + 'javaagent.jar')
-      .add_system_property('appdynamics.agent.applicationName', "'#{@vcap_application[KEY_NAME]}'")
+      .add_javaagent(@droplet.sandbox + 'javaagent.jar')
+      .add_system_property('appdynamics.agent.applicationName', "'#{application_name}'")
       .add_system_property('appdynamics.agent.tierName', "'#{@configuration['tier_name']}'")
       .add_system_property('appdynamics.agent.nodeName',
                            "$(expr \"$VCAP_APPLICATION\" : '.*instance_id[\": ]*\"\\([a-z0-9]\\+\\)\".*')")
@@ -52,48 +52,40 @@ module JavaBuildpack::Framework
     protected
 
     def supports?
-      JavaBuildpack::Util::ServiceUtils.find_service(@vcap_services, SERVICE_NAME)
+      @application.services.one_service? FILTER
     end
 
     private
 
-    KEY_ACCOUNT_ACCESS_KEY = 'account-access-key'.freeze
+    FILTER = /app-dynamics/.freeze
 
-    KEY_ACCOUNT_NAME = 'account-name'.freeze
-
-    KEY_HOST_NAME = 'host-name'.freeze
-
-    KEY_NAME = 'application_name'.freeze
-
-    KEY_PORT = 'port'.freeze
-
-    KEY_SSL_ENABLED = 'ssl-enabled'.freeze
-
-    SERVICE_NAME = /app-dynamics/.freeze
+    def application_name
+      @application.details['application_name']
+    end
 
     def account_access_key(java_opts, credentials)
-      account_access_key = credentials[KEY_ACCOUNT_ACCESS_KEY]
+      account_access_key = credentials['account-access-key']
       java_opts.add_system_property 'appdynamics.agent.accountAccessKey', account_access_key if account_access_key
     end
 
     def account_name(java_opts, credentials)
-      account_name = credentials[KEY_ACCOUNT_NAME]
+      account_name = credentials['account-name']
       java_opts.add_system_property 'appdynamics.agent.accountName', account_name if account_name
     end
 
     def host_name(java_opts, credentials)
-      host_name = credentials[KEY_HOST_NAME]
-      fail "'#{KEY_HOST_NAME}' credential must be set" unless host_name
+      host_name = credentials['host-name']
+      fail "'host-name' credential must be set" unless host_name
       java_opts.add_system_property 'appdynamics.controller.hostName', host_name
     end
 
     def port(java_opts, credentials)
-      port = credentials[KEY_PORT]
+      port = credentials['port']
       java_opts.add_system_property 'appdynamics.controller.port', port if port
     end
 
     def ssl_enabled(java_opts, credentials)
-      ssl_enabled = credentials[KEY_SSL_ENABLED]
+      ssl_enabled = credentials['ssl-enabled']
       java_opts.add_system_property 'appdynamics.controller.ssl.enabled', ssl_enabled if ssl_enabled
     end
 

@@ -18,6 +18,7 @@ require 'fileutils'
 require 'java_buildpack/component'
 require 'java_buildpack/component/base_component'
 require 'java_buildpack/repository/configured_item'
+require 'java_buildpack/util/dash_case'
 require 'tmpdir'
 
 module JavaBuildpack::Component
@@ -63,8 +64,8 @@ module JavaBuildpack::Component
     #  # Downloads the versioned dependency, then yields the resultant file to the given block.
     #  #
     #  # @return [void]
-    #  def download(description = @component_name, &block)
-    #    super_download @version, @uri, description, &block
+    #  def download(name = @component_name, &block)
+    #    super_download @version, @uri, name, &block
     #  end
     #
     #  # Downloads a given JAR and copies it to a given destination.
@@ -72,18 +73,18 @@ module JavaBuildpack::Component
     #  # @param [String] jar_name the filename of the item
     #  # @param [String] target_directory the path of the directory into which to download the item. Defaults to
     #  #                                  +@lib_directory+
-    #  # @param [String] description an optional description for the download.  Defaults to +@component_name+.
-    #  def download_jar(jar_name, target_directory = @application.additional_libraries, description = @component_name)
-    #    download(description) { |file| FileUtils.cp file.path, (target_directory + jar_name) }
+    #  # @param [String] name an optional name for the download.  Defaults to +@component_name+.
+    #  def download_jar(jar_name, target_directory = @application.additional_libraries, name = @component_name)
+    #    download(name) { |file| FileUtils.cp file.path, (target_directory + jar_name) }
     #  end
     #
     #  # Downloads a given ZIP file and expands it to a given destination.
     #  #
     #  # @param [Boolean] strip_top_level_directory Whether to strip the top-level directory when expanding. Defaults to +true+.
-    #  # @param [String] description an optional description for the download and expansion.  Defaults to +@component_name+.
-    #  def download_zip(strip_top_level_directory = true, description = @component_name)
-    #    download(description) do |file|
-    #      with_timing "Expanding #{description} to #{@application.relative_path_to(home)}" do
+    #  # @param [String] name an optional name for the download and expansion.  Defaults to +@component_name+.
+    #  def download_zip(strip_top_level_directory = true, name = @component_name)
+    #    download(name) do |file|
+    #      with_timing "Expanding #{name} to #{@application.relative_path_to(home)}" do
     #        FileUtils.rm_rf home
     #        FileUtils.mkdir_p home.dirname
     #
@@ -99,12 +100,24 @@ module JavaBuildpack::Component
     #    end
     #  end
 
-    # Downloads a given TAR file and expands it to a given destination.
-    def download_tar(description = @component_name)
-      download(@version, @uri, description) do |file|
-        with_timing "Expanding #{description} to #{@droplet.sandbox.relative_path_from(@droplet.root)}" do
-          FileUtils.mkdir_p @droplet.sandbox
+    # Downloads a given JAR file and stores it in the component's sandbox.
+    #
+    # @param [String] jar_name the name to save the jar as
+    # @param [String] name an optional name for the download.  Defaults to +@component_name+.
+    def download_jar(jar_name, name = @component_name)
+      download(@version, @uri, name) do |file|
+        FileUtils.mkdir_p @droplet.sandbox
+        FileUtils.cp_r(file.path, @droplet.sandbox + jar_name)
+      end
+    end
 
+    # Downloads a given TAR file and expands it to the component's sandbox.
+    #
+    # @param [String] name an optional name for the download and expansion.  Defaults to +@component_name+.
+    def download_tar(name = @component_name)
+      download(@version, @uri, name) do |file|
+        with_timing "Expanding #{name} to #{@droplet.sandbox.relative_path_from(@droplet.root)}" do
+          FileUtils.mkdir_p @droplet.sandbox
           shell "tar xzf #{file.path} -C #{@droplet.sandbox} --strip 1 2>&1"
         end
       end
@@ -113,7 +126,7 @@ module JavaBuildpack::Component
     private
 
     def id(version)
-      "#{@droplet.component_id}=#{version}"
+      "#{self.class.to_s.dash_case}=#{version}"
     end
 
     def with_timing(caption)

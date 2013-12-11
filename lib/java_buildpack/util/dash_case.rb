@@ -14,15 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# A mixin that adds the ability to turn a +String+ into space case
+# A mixin that adds the ability to turn a +String+ into dash case
 class String
 
-  # Converts a string to space case
-  def space_case
+  # Converts a string to dash case
+  def dash_case
     split('::').last
-    .gsub(/([A-Z]+)([A-Z][a-z])/, '\1 \2')
-    .gsub(/([a-z\d])([A-Z])/, '\1 \2')
-    .tr('-', ' ')
+    .gsub(/([A-Z]+)([A-Z][a-z])/, '\1-\2')
+    .gsub(/([a-z\d])([A-Z])/, '\1-\2')
+    .downcase
   end
 
 end
